@@ -24,16 +24,16 @@ const useWebsocket = () => {
         //准备
         socket.on("prepare", (payload:{player: Player, players: Player[] }) => {
             const {player,players}=payload
-            console.log("准备Player：",player.username);
+            console.log("准备Player：",player.username,players);
             userState.players=players
         });
         //进入房间
-        socket.on("joinRoom", (payload:{player: Player, players: Player[] }) => {
-            const {player,players}=payload
+        socket.on("joinRoom", (payload:{player: Player, players: Player[],round:number }) => {
+            const {player,players,round}=payload
             console.log("进入房间的player：",player.username);
-            console.log("进入房间的player：",payload);
             //更新状态
             userState.players=players
+            userState.round = round
         });
         //离开房间
         socket.on("leaveRoom", (payload:{player:Player,players:Player[]}) => {
@@ -43,6 +43,15 @@ const useWebsocket = () => {
             userState.players=players
 
         });
+        socket.on("sendCards",(payload:{players:Player[]})=>{
+            console.log("收到发牌：",payload.players)
+            const {players}=payload
+
+            userState.players=players.map(player=>{
+                player.cards.sort((a,b)=>a.index-b.index)
+                return player
+            })
+        })
         socket.on("disconnect", () => {
             console.log(socket.id); // undefined
         });
